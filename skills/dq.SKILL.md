@@ -78,10 +78,12 @@ Remove a connection:
 dq connection remove prod-pg
 ```
 
-Password formats:
-- `env:VAR_NAME` — reads from environment variable (preferred)
-- `keyring:name` — reads from OS keychain (not yet implemented)
-- plain text — stored as-is (warns on creation)
+Password formats (most to least secure):
+- `--store-in-keyring` — stores password in OS keychain (macOS Keychain, Windows Credential Manager, Linux Secret Service). Config file stores only `keyring:<name>` reference.
+- `env:VAR_NAME` — reads from environment variable at connect time
+- plain text — stored as-is in config file (warns on creation)
+
+Use `--password-stdin` to avoid leaking the password in shell history or `/proc`.
 
 ## Discover — Agent Orientation
 
@@ -286,7 +288,7 @@ Errors are always written to stderr as JSON:
 | Error | Meaning | Action |
 |---|---|---|
 | Connection refused | Database not reachable | Verify host, port, and network with `dq connection test` |
-| Auth failure | Bad credentials | Check password format (`env:VAR`), verify env var is set |
+| Auth failure | Bad credentials | Check password format (`env:VAR` / `keyring:name`), verify env var is set or keyring entry exists |
 | Connection not found | Name not in config | Run `dq connection list` to see available connections |
 | Timeout | Query exceeded limit | Increase `--timeout` or optimize the query |
 | Unsupported database type | Backend not registered | Use `postgres`, `mysql`, or `sqlite` |

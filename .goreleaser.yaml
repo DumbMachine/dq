@@ -1,0 +1,108 @@
+version: 2
+
+project_name: dq
+
+before:
+  hooks:
+    - go mod tidy
+    - go test ./...
+
+builds:
+  - id: dq
+    binary: dq
+    main: .
+    env:
+      - CGO_ENABLED=1
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/dumbmachine/db-cli/cmd.Version={{.Version}}
+      - -X github.com/dumbmachine/db-cli/cmd.Commit={{.ShortCommit}}
+      - -X github.com/dumbmachine/db-cli/cmd.BuildDate={{.Date}}
+    overrides:
+      - goos: linux
+        goarch: amd64
+        env:
+          - CGO_ENABLED=1
+          - CC=x86_64-linux-gnu-gcc
+      - goos: linux
+        goarch: arm64
+        env:
+          - CGO_ENABLED=1
+          - CC=aarch64-linux-gnu-gcc
+
+  - id: dq-windows
+    binary: dq
+    main: .
+    env:
+      - CGO_ENABLED=1
+      - CC=x86_64-w64-mingw32-gcc
+    goos:
+      - windows
+    goarch:
+      - amd64
+    ldflags:
+      - -s -w
+      - -X github.com/dumbmachine/db-cli/cmd.Version={{.Version}}
+      - -X github.com/dumbmachine/db-cli/cmd.Commit={{.ShortCommit}}
+      - -X github.com/dumbmachine/db-cli/cmd.BuildDate={{.Date}}
+
+archives:
+  - id: default
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+      - "^chore:"
+
+release:
+  github:
+    owner: DumbMachine
+    name: dq
+  draft: false
+  prerelease: auto
+  name_template: "v{{.Version}}"
+  header: |
+    ## Installation
+
+    **Binary download:**
+    ```bash
+    curl -fsSL https://raw.githubusercontent.com/DumbMachine/dq/main/install.sh | sh
+    ```
+
+    **Go install:**
+    ```bash
+    go install github.com/dumbmachine/db-cli@v{{.Version}}
+    ```
+
+# Uncomment when DumbMachine/homebrew-tap repo is created:
+# brews:
+#   - repository:
+#       owner: DumbMachine
+#       name: homebrew-tap
+#     directory: Formula
+#     homepage: "https://github.com/DumbMachine/dq"
+#     description: "Agent-first database CLI"
+#     license: "MIT"
+#     install: |
+#       bin.install "dq"
+#     test: |
+#       system "#{bin}/dq", "version"

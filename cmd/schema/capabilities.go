@@ -65,6 +65,7 @@ var capabilitiesCmd = &cobra.Command{
 				"pagination",
 				"schema_caching",
 				"annotations",
+				"os_keychain_credential_storage",
 			},
 		}
 

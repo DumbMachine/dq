@@ -1,6 +1,8 @@
 package connection
 
 import (
+	"strings"
+
 	"github.com/dumbmachine/db-cli/internal/cache"
 	"github.com/dumbmachine/db-cli/internal/config"
 	"github.com/dumbmachine/db-cli/internal/output"
@@ -18,6 +20,16 @@ var removeCmd = &cobra.Command{
 		cfg, err := config.Load()
 		if err != nil {
 			return err
+		}
+
+		// Clean up keyring entry if the connection uses one
+		conn, err := cfg.GetConnection(name)
+		if err != nil {
+			return err
+		}
+		if strings.HasPrefix(conn.Password, "keyring:") {
+			keyringName := strings.TrimPrefix(conn.Password, "keyring:")
+			_ = config.DeleteFromKeyring(keyringName)
 		}
 
 		if err := cfg.RemoveConnection(name); err != nil {

@@ -20,7 +20,7 @@ dq connection list --output json
 
 ## Step 2 — Add a new connection
 
-Ask the user for connection details: database type, host, port, database name, user, and password. Prefer `env:VAR_NAME` for passwords so credentials stay out of config files.
+Ask the user for connection details: database type, host, port, database name, user, and password. Prefer `--store-in-keyring` (OS keychain) or `env:VAR_NAME` for passwords so credentials stay out of config files.
 
 **PostgreSQL example:**
 
