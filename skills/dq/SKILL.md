@@ -5,7 +5,7 @@ description: Agent-first database CLI for discovering, querying, introspecting, 
 
 # dq
 
-dq is an agent-first database CLI. It supports PostgreSQL, MySQL, and SQLite. Output is structured JSON when piped and human-readable tables when interactive.
+dq is an agent-first cli to query databases. It supports PostgreSQL, MySQL, and SQLite. Output is structured JSON when piped and human-readable tables when interactive.
 
 Every query command requires `-c <connection>` to specify which database to use.
 

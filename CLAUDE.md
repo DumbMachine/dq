@@ -6,13 +6,13 @@ dq is a **safe, thin wrapper over gorm** that gives agents a generic CLI interfa
 
 ### Guiding Principles
 
-1. **Thin wrapper, not a feature factory.** If something can be done by the agent running SQL through the query interface, don't build a dedicated command for it. Admin operations (vacuum, kill queries, table sizes, stats) are just SQL — agents can compose those themselves. The CLI provides: connect, query, get structured results back.
+1. **Thin wrapper, not a feature factory.** If something can be done by the agent running SQL through the query interface, don't build a dedicated command for it. Admin operations (vacuum, kill queries, table sizes, stats) are just SQL — agents can compose those themselves. The CLI provides: connect, query, get structured results back. Currently skills should be used to extend to support particular usecases and plugins in future.
 
 2. **Teach workflows through recipes, not commands.** Instead of encoding DBA logic into CLI commands, encode it into skill files (`skills/`). Recipes teach agents multi-step workflows using the small set of core commands. This keeps the binary simple and the knowledge extensible.
 
 3. **Agent-first design (Agent DX > Human DX).** Follow the principles from [Rewrite Your CLI for AI Agents](https://justin.poehnelt.com/posts/rewrite-your-cli-for-ai-agents/): machine-readable output, schema introspection, context window discipline, input hardening, safety rails, agent knowledge packaging. Optimize for predictability and defense-in-depth, not discoverability and forgiveness.
 
-4. **Don't reinvent the wheel.** Use existing, correct solutions. Prepared statements over hand-rolled quoting. GORM's built-in quoting over custom identifier escapers. Standard library over bespoke helpers. If you find yourself writing utility code, check if the dependency already handles it.
+4. **Don't reinvent the wheel.** Use existing, correct solutions. Prepared statement, GORM's built-in quoting over custom identifier escapers. Standard library over bespoke helpers. If you find yourself writing utility code, check if the dependency already handles it.
 
 5. **Annotations are agent memory.** Annotations persist knowledge across sessions (PII columns, business logic notes, data quirks). They merge into discover output automatically. This is what makes dq agent-*first* rather than agent-*tolerant* — the agent builds a knowledge base about your data over time.
 

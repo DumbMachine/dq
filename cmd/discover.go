@@ -84,9 +84,9 @@ var discoverCmd = &cobra.Command{
 				indexes, _ := drv.ListIndexes(db, schemaName, tbl.Name)
 
 				tableOverview := types.TableOverview{
-					Name:        tbl.Name,
-					Type:        tbl.Type,
-					RowCount:    tbl.RowCount,
+					Name: tbl.Name,
+					Type: tbl.Type,
+					// RowCount:    tbl.RowCount,
 					Size:        tbl.Size,
 					SizeBytes:   tbl.SizeBytes,
 					Columns:     columns,

@@ -44,20 +44,39 @@ you name them once, use them forever. config lives in `~/.config/dq/config.yaml`
 
 ```sh
 # postgres
-dq connection add prod --type postgres --host db.prod.internal --port 5432 \
+❯ dq connection add adaptive-local-db --type postgres --host db.prod.internal --port 5432 \
   --database myapp --user readonly --password "env:DB_PASS"
+connection  adaptive-local-db
+status      created
+type        postgres
+
+❯ dq connection add adaptive-local-db --type postgres --host localhost --port 5432 \
+  --user postgres --password mysecretpassword --database "postgres" --store-in-keyring
+connection  adaptive-local-db
+status      created
+type        postgres
 
 # sqlite, because sometimes that's all you need
 dq connection add local --type sqlite --path ./app.db
 
-# what do i have
-dq connection list
+❯ dq connection list
+
+┌──────────┬───────────┬─────────────────────┬──────┬──────────┐
+│ DATABASE │   HOST    │        NAME         │ PORT │   TYPE   │
+├──────────┼───────────┼─────────────────────┼──────┼──────────┤
+│ postgres │ localhost │ adaptive-local-db   │ 5432 │ postgres │
+│ postgres │ localhost │ adaptive-local-db-1 │ 5432 │ postgres │
+└──────────┴───────────┴─────────────────────┴──────┴──────────┘
 
 # does it actually work
-dq connection test prod
+❯ dq connection test adaptive-local-db
+
+connection   adaptive-local-db
+duration_ms  38
+status       ok
 
 # nuke it
-dq connection remove prod
+dq connection remove adaptive-local-db
 ```
 
 passwords take `env:VAR_NAME` so you're not putting secrets in yaml like an animal.
@@ -68,7 +87,27 @@ the whole point. one command, full picture. schemas, tables, columns,
 types, pks, fks, row counts, sizes. your agent's pgadmin sidebar.
 
 ```sh
-dq discover -c prod
+❯ dq discover -c adaptive-local-db | head -n 20
+{
+  "connection": "adaptive-local-db",
+  "database": "postgres",
+  "cached_at": "2026-03-19T08:41:51.870051Z",
+  "schemas": [
+    {
+      "name": "auth",
+      "tables": [
+        {
+          "name": "audit_log_entries",
+          "type": "BASE TABLE",
+          "row_count": 0,
+          "size": "24 kB",
+          "size_bytes": 24576,
+          "columns": [
+            {
+              "name": "instance_id",
+              "type": "uuid",
+              "nullable": true
+            },
 ```
 
 cached after first call. instant on repeat. `--refresh` to re-introspect.
@@ -199,5 +238,3 @@ dq annotate set -c prod --table ...     # remember what you learned
 dq schema describe -c prod --table ...  # deep dive
 dq postgres -c prod "UPDATE ..." --dry-run  # preview changes
 ```
-
-one call to orient. one call to query. repeat.
