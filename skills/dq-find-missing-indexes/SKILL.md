@@ -1,5 +1,5 @@
 ---
-name: recipe-find-missing-indexes
+name: dq-find-missing-indexes
 description: Identify columns that should have indexes but don't. Checks sequential scan frequency, unindexed foreign keys, and query patterns to generate CREATE INDEX recommendations.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: recipe-trace-relationships
+name: dq-trace-relationships
 description: Follow foreign key chains from a starting table to map the data model. Describe each table's FKs, traverse referenced tables up to a configurable depth, build a relationship map, annotate findings, and present the result.
 ---
 

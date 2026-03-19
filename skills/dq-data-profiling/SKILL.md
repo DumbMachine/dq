@@ -1,5 +1,5 @@
 ---
-name: recipe-data-profiling
+name: dq-data-profiling
 description: Profile a table's data quality and distribution. Compute row counts, null rates, distinct counts, and min/max per column in a single query, flag anomalies, annotate findings, and present a summary table.
 ---
 

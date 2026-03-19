@@ -1,5 +1,5 @@
 ---
-name: recipe-find-table
+name: dq-find-table
 description: Locate a table when the user gives a vague or partial name. Search table names, then column names, compare candidates, annotate the result, and report the match with schema details.
 ---
 

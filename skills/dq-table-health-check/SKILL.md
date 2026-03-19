@@ -1,5 +1,5 @@
 ---
-name: recipe-table-health-check
+name: dq-table-health-check
 description: Comprehensive health check for a specific database table. Evaluate size, dead tuples, vacuum status, index efficiency, bloat, and missing FK indexes. Use when the user wants to assess the health of a table or investigate degraded performance on a specific table.
 ---
 
@@ -89,7 +89,7 @@ dq postgres -c <connection> "SELECT relname, seq_scan, seq_tup_read, idx_scan, i
 | 30-60% | Concerning | Investigate top queries hitting this table |
 | > 60% | Poor | Critical indexing gaps, investigate immediately |
 
-**Decision point**: If `seq_scan_pct` is high, this table is a candidate for the `recipe-slow-query-investigation` workflow to find which queries are causing the sequential scans.
+**Decision point**: If `seq_scan_pct` is high, this table is a candidate for the `dq-slow-query-investigation` workflow to find which queries are causing the sequential scans.
 
 ### 5. List indexes and their sizes, flag problems
 

@@ -3,8 +3,39 @@
 database cli to connect to dbs ( postgres, mysql, sqlite ) for agents. named connections. structured output.
 json when piped, tables when human. agents figure out the rest.
 
+## install
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/DumbMachine/dq/main/install.sh | sh
 ```
+
+or build it yourself
+
+```sh
 make build
+```
+
+## skills
+
+dq ships with [skills](skills/) that teach agents how to use the CLI — from basic queries to multi-step DBA workflows.
+
+```sh
+# install all skills at once
+npx skills add https://github.com/dumbmachine/dq
+
+# or pick only what you need
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-cold-start
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-data-profiling
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-find-missing-indexes
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-find-table
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-orphan-check
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-query-impact-analysis
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-safe-backfill
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-safe-mutation
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-sample-and-summarize
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-slow-query-investigation
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-table-health-check
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-trace-relationships
 ```
 
 ## connections

@@ -1,5 +1,5 @@
 ---
-name: recipe-slow-query-investigation
+name: dq-slow-query-investigation
 description: Find and diagnose slow queries on a database. Identify active long-running queries, analyze their plans, check table statistics, find unused indexes, and suggest optimizations. Use when the user reports slow performance or wants to optimize their database.
 ---
 

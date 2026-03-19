@@ -1,5 +1,5 @@
 ---
-name: recipe-orphan-check
+name: dq-orphan-check
 description: Find rows with broken foreign key references. Detects orphaned records where the referenced parent row no longer exists, reports impact, and suggests remediation.
 ---
 
@@ -128,7 +128,7 @@ dq postgres -c <connection> \
   --dry-run --output json
 ```
 
-Then follow the [safe-mutation recipe](recipe-safe-mutation.md) to execute.
+Then follow the [dq-safe-mutation](../dq-safe-mutation/) recipe to execute.
 
 **Option B: Re-create missing parent rows** (when the child data is valuable and needs a valid parent)
 

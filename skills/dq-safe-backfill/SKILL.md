@@ -1,5 +1,5 @@
 ---
-name: recipe-safe-backfill
+name: dq-safe-backfill
 description: Batch update pattern for large data changes. Processes rows in controlled batches to avoid long locks, timeouts, and replication lag. Includes progress tracking and verification.
 ---
 

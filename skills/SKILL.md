@@ -29,6 +29,13 @@ Boundary rules:
 - Respect `--limit` to avoid flooding context with large result sets.
 - Use `--fields` to select only the columns you need.
 
+## Quick Start
+
+1. **Add a connection**: `dq connection add mydb --type postgres --host localhost --port 5432 --database myapp --user admin --password env:DB_PASS`
+2. **Discover the database**: `dq discover -c mydb --output json` — returns full schema hierarchy (cached)
+3. **Query**: `dq postgres -c mydb "SELECT * FROM users LIMIT 5" --output json`
+4. **Annotate**: `dq annotate set -c mydb --table users --column email --note "PII - do not expose"`
+
 ## Connections
 
 Connection config is stored in `~/.config/dq/config.yaml`.
@@ -163,6 +170,47 @@ Result envelope:
 }
 ```
 
+### Query Patterns
+
+**With Pagination:**
+
+```bash
+dq postgres -c mydb "SELECT * FROM users ORDER BY created_at DESC" --limit 10 --offset 20
+```
+
+**Field Filtering:**
+
+```bash
+dq postgres -c mydb "SELECT * FROM users" --fields id,email,created_at
+```
+
+**Dry Run (Preview Mutations):**
+
+```bash
+dq postgres -c mydb "DELETE FROM users WHERE status = 'inactive'" --dry-run
+# Returns affected_rows count without actually deleting
+```
+
+**With Timeout:**
+
+```bash
+dq postgres -c mydb "SELECT * FROM large_table" --timeout 60s
+```
+
+**EXPLAIN:**
+
+```bash
+dq postgres -c mydb "SELECT * FROM users WHERE email = 'test@example.com'" --explain
+```
+
+**Export Results:**
+
+```bash
+# Pipe query output to a file using shell redirection
+dq postgres -c mydb "SELECT * FROM users" --output csv > users.csv
+dq postgres -c mydb "SELECT * FROM users" --output ndjson > users.ndjson
+```
+
 ## Dry Run
 
 Add `--dry-run` to any mutation. dq wraps the SQL in `BEGIN` → execute → `ROLLBACK`. You get real `affected_rows` and constraint errors without modifying data.
@@ -293,7 +341,61 @@ Errors are always written to stderr as JSON:
 | Timeout | Query exceeded limit | Increase `--timeout` or optimize the query |
 | Unsupported database type | Backend not registered | Use `postgres`, `mysql`, or `sqlite` |
 
-Guidelines:
+## Troubleshooting
+
+### Connection Issues
+
+```bash
+# Test connectivity
+dq connection test prod --output json
+
+# Show connection config
+dq connection show prod --output json
+
+# Re-add with correct credentials
+dq connection remove prod
+dq connection add prod --type postgres --host ... --password "env:DB_PASS"
+```
+
+### Investigate Database State via SQL
+
+```bash
+# Find slow queries (PostgreSQL)
+dq postgres -c prod "SELECT pid, state, query, now() - query_start AS duration FROM pg_stat_activity WHERE state = 'active' ORDER BY duration DESC" --output json
+
+# Check locks (PostgreSQL)
+dq postgres -c prod "SELECT l.pid, l.mode, l.granted, c.relname FROM pg_locks l LEFT JOIN pg_class c ON l.relation = c.oid WHERE NOT l.granted" --output json
+
+# Table sizes (PostgreSQL)
+dq postgres -c prod "SELECT relname, pg_size_pretty(pg_total_relation_size(oid)) AS size FROM pg_class WHERE relkind = 'r' ORDER BY pg_total_relation_size(oid) DESC LIMIT 10" --output json
+
+# Database stats (PostgreSQL)
+dq postgres -c prod "SELECT pg_size_pretty(pg_database_size(current_database())) AS size, (SELECT count(*) FROM pg_stat_activity WHERE state = 'active') AS active_conns" --output json
+```
+
+### Schema Investigation
+
+```bash
+# Orient yourself
+dq discover -c prod --output json
+
+# Deep dive into a specific table
+dq schema describe -c prod --table orders --output json
+
+# Refresh cached discovery
+dq discover -c prod --refresh --output json
+```
+
+### Annotate Findings
+
+```bash
+# Persist what you learn for future sessions
+dq annotate set -c prod --table orders --note "Needs index on created_at, queries slow"
+dq annotate set -c prod --table users --column status --note "1=active, 2=suspended, 3=deactivated"
+```
+
+## Guidelines
+
 - Always include `--output json` when parsing results programmatically.
 - Use `dq discover` to orient before querying — do not guess table or column names.
 - Annotate PII columns immediately when you identify them.
@@ -318,3 +420,37 @@ dq schema describe -c prod-pg --table orders --output json
 # 5. Preview mutations
 dq postgres -c prod-pg "UPDATE users SET status = 2 WHERE last_login < '2025-01-01'" --dry-run --output json
 ```
+
+## Optional Recipe Skills
+
+For multi-step workflows, install additional skills:
+
+```sh
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-cold-start
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-find-table
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-trace-relationships
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-data-profiling
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-sample-and-summarize
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-query-impact-analysis
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-safe-mutation
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-safe-backfill
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-slow-query-investigation
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-table-health-check
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-find-missing-indexes
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-orphan-check
+```
+
+| Skill | Description |
+|-------|-------------|
+| [dq-cold-start](dq-cold-start/) | First encounter with an unknown database: connect, discover, flag PII, annotate key tables. |
+| [dq-find-table](dq-find-table/) | Locate a table from a vague user description (fuzzy search, column search, annotate result). |
+| [dq-trace-relationships](dq-trace-relationships/) | Map foreign key chains from a table to understand the data model. |
+| [dq-data-profiling](dq-data-profiling/) | Profile a table: row count, null rates, distinct counts, min/max per column. |
+| [dq-sample-and-summarize](dq-sample-and-summarize/) | Get representative rows, summarize value distributions, flag anomalies. |
+| [dq-query-impact-analysis](dq-query-impact-analysis/) | "Is this query safe?" EXPLAIN + dry-run + cascade check + risk assessment. |
+| [dq-safe-mutation](dq-safe-mutation/) | Dry-run, confirm, execute pattern for INSERT/UPDATE/DELETE. |
+| [dq-safe-backfill](dq-safe-backfill/) | Batch update pattern: preview, execute in chunks, track progress. |
+| [dq-slow-query-investigation](dq-slow-query-investigation/) | Find slow queries via pg_stat_activity, EXPLAIN them, suggest fixes. |
+| [dq-table-health-check](dq-table-health-check/) | Table health: size, bloat, dead tuples, index usage, missing indexes. |
+| [dq-find-missing-indexes](dq-find-missing-indexes/) | Identify columns in WHERE/JOIN without indexes, generate CREATE INDEX suggestions. |
+| [dq-orphan-check](dq-orphan-check/) | Find rows with broken foreign key references (dangling FKs). |

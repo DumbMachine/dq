@@ -1,5 +1,5 @@
 ---
-name: recipe-sample-and-summarize
+name: dq-sample-and-summarize
 description: Get representative rows from a table and summarize column distributions, flag anomalies, and present findings. Use when the user wants to understand the shape and quality of data in a table.
 ---
 

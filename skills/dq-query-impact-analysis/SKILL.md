@@ -1,5 +1,5 @@
 ---
-name: recipe-query-impact-analysis
+name: dq-query-impact-analysis
 description: Analyze a SQL query for safety before execution. Evaluate query plan, blast radius, cascading effects, missing indexes, and compile a risk assessment. Use when the user asks "is this query safe?" or before running any unfamiliar mutation.
 ---
 

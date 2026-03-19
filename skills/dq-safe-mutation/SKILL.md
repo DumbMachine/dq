@@ -1,5 +1,5 @@
 ---
-name: recipe-safe-mutation
+name: dq-safe-mutation
 description: The dry-run, confirm, execute pattern for any INSERT, UPDATE, or DELETE. Prevents accidental data loss by previewing impact before committing changes.
 ---
 

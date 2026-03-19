@@ -1,5 +1,5 @@
 ---
-name: recipe-cold-start
+name: dq-cold-start
 description: First encounter with an unknown database. Establish a connection, discover the full schema, identify large tables and PII columns, annotate key domain entities, and summarize findings to the user.
 ---
 
