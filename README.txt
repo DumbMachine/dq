@@ -21,7 +21,7 @@ dq ships with [skills](skills/) that teach agents how to use the CLI — from ba
 
 ```sh
 # install all skills at once
-npx skills add https://github.com/dumbmachine/dq
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq
 
 # or pick only what you need
 npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-cold-start
