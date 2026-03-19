@@ -3,7 +3,9 @@
 database cli to connect to dbs ( postgres, mysql, sqlite ) for agents. named connections. structured output.
 json when piped, tables when human. agents figure out the rest.
 
-## install
+Inspired by [gws](https://github.com/googleworkspace/cli)
+
+## Install
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/DumbMachine/dq/main/install.sh | sh
@@ -15,7 +17,7 @@ or build it yourself
 make build
 ```
 
-## skills
+## Skills
 
 dq ships with [skills](skills/) that teach agents how to use the CLI — from basic queries to multi-step DBA workflows.
 
@@ -41,6 +43,7 @@ npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-trace-relat
 ## connections
 
 you name them once, use them forever. config lives in `~/.config/dq/config.yaml`.
+Passwords are stored in keychain ( osx ), [gnome](https://www.youtube.com/watch?v=6n3pFFPSlW4)-keyring ( linux ), credential manager ( windows ). You can also provide the password as env var, or provide them directly as plain text ( not recommended ).
 
 ```sh
 # postgres
@@ -57,7 +60,7 @@ status      created
 type        postgres
 
 # sqlite, because sometimes that's all you need
-dq connection add local --type sqlite --path ./app.db
+❯ dq connection add local --type sqlite --path ./app.db
 
 ❯ dq connection list
 
@@ -79,12 +82,10 @@ status       ok
 dq connection remove adaptive-local-db
 ```
 
-passwords take `env:VAR_NAME` so you're not putting secrets in yaml like an animal.
-
 ## discover
 
-the whole point. one command, full picture. schemas, tables, columns,
-types, pks, fks, row counts, sizes. your agent's pgadmin sidebar.
+one command to give your agent a full picture. schemas, tables, columns,
+types, pks, fks, row counts, sizes.
 
 ```sh
 ❯ dq discover -c adaptive-local-db | head -n 20
@@ -143,15 +144,6 @@ pipe it, parse it, whatever. `| jq .rows` and move on.
 dq postgres -c prod "SELECT * FROM big_table" --limit 20 --offset 100
 dq postgres -c prod "SELECT * FROM users" --fields id,email
 ```
-
-### don't blow up your database
-
-```sh
-dq postgres -c prod "DELETE FROM users WHERE status = 3" --dry-run
-```
-
-wraps in `BEGIN`, runs it, reads the result, `ROLLBACK`. you get real
-affected_rows and real constraint errors. nothing actually changes.
 
 ### explain
 
@@ -226,7 +218,6 @@ errors go to stderr. always json. always structured.
 4  auth
 5  conflict
 6  timeout
-7  dry-run completed (nothing changed, on purpose)
 ```
 
 ## the workflow
@@ -236,5 +227,5 @@ dq discover -c prod                     # what's in here
 dq postgres -c prod "SELECT ..."        # get data
 dq annotate set -c prod --table ...     # remember what you learned
 dq schema describe -c prod --table ...  # deep dive
-dq postgres -c prod "UPDATE ..." --dry-run  # preview changes
+dq postgres -c prod "SELECT ..." --explain  # check query plan
 ```

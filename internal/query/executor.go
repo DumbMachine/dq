@@ -11,17 +11,15 @@ import (
 )
 
 type ExecOptions struct {
-	DryRun  bool
 	Timeout time.Duration
 	Limit   int
 	Offset  int
 }
 
 type ExecResult struct {
-	Columns      []types.ColumnMeta
-	Rows         []map[string]any
-	AffectedRows int64
-	Duration     time.Duration
+	Columns  []types.ColumnMeta
+	Rows     []map[string]any
+	Duration time.Duration
 }
 
 func Execute(db *gorm.DB, sql string, opts ExecOptions) (*ExecResult, error) {
@@ -44,30 +42,11 @@ func Execute(db *gorm.DB, sql string, opts ExecOptions) (*ExecResult, error) {
 		execSQL = fmt.Sprintf("SELECT * FROM (%s) AS _dq_sub OFFSET %d", sql, opts.Offset)
 	}
 
-	if opts.DryRun {
-		return executeDryRun(ctx, db, execSQL, start)
-	}
 	return executeNormal(ctx, db, execSQL, start)
 }
 
 func executeNormal(ctx context.Context, db *gorm.DB, sql string, start time.Time) (*ExecResult, error) {
 	rows, err := db.WithContext(ctx).Raw(sql).Rows()
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	return scanResult(rows, start)
-}
-
-func executeDryRun(ctx context.Context, db *gorm.DB, sql string, start time.Time) (*ExecResult, error) {
-	tx := db.WithContext(ctx).Begin()
-	if tx.Error != nil {
-		return nil, fmt.Errorf("starting transaction: %w", tx.Error)
-	}
-	defer tx.Rollback()
-
-	rows, err := tx.Raw(sql).Rows()
 	if err != nil {
 		return nil, err
 	}

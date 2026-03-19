@@ -1,11 +1,11 @@
 ---
 name: dq-safe-mutation
-description: The dry-run, confirm, execute pattern for any INSERT, UPDATE, or DELETE. Prevents accidental data loss by previewing impact before committing changes.
+description: The explain, count, preview, confirm, execute pattern for any INSERT, UPDATE, or DELETE. Prevents accidental data loss by assessing impact before committing changes.
 ---
 
 # Recipe: Safe Mutation
 
-Every mutation (INSERT, UPDATE, DELETE) must follow this pattern: explain, dry-run, preview, confirm, execute, verify. Never skip steps.
+Every mutation (INSERT, UPDATE, DELETE) must follow this pattern: explain, count, preview, confirm, execute, verify. Never skip steps.
 
 ## Step 1: Examine the Query Plan
 
@@ -17,15 +17,15 @@ dq postgres -c <connection> "<mutation_sql>" --explain --output json
 
 Look for sequential scans on large tables — they signal the WHERE clause may not be selective enough.
 
-## Step 2: Dry-Run to See Affected Row Count
+## Step 2: Count Affected Rows
 
-The `--dry-run` flag wraps the mutation in a transaction and rolls it back, reporting the number of rows that would be affected without making any changes.
+Use `SELECT COUNT(*)` with the same WHERE clause as your mutation to see how many rows will be affected — with zero side effects.
 
 ```bash
-dq postgres -c <connection> "DELETE FROM sessions WHERE expires_at < NOW()" --dry-run --output json
+dq postgres -c <connection> "SELECT COUNT(*) AS affected_rows FROM sessions WHERE expires_at < NOW()" --output json
 ```
 
-The response includes `affected_rows`. If this number is unexpectedly high or zero, stop and investigate.
+If the count is unexpectedly high or zero, stop and investigate.
 
 ## Step 3: If UPDATE — Preview Rows Before the Change
 
@@ -98,7 +98,7 @@ Ask the user to confirm before executing. Never auto-execute mutations. Present 
 
 ## Step 7: Execute the Mutation
 
-Run the same SQL without `--dry-run`:
+Run the mutation:
 
 ```bash
 dq postgres -c <connection> \
@@ -124,7 +124,7 @@ dq postgres -c <connection> \
   --output json
 ```
 
-If the count does not match the dry-run prediction, investigate immediately.
+If the count does not match the pre-execution estimate, investigate immediately.
 
 ## MySQL Differences
 

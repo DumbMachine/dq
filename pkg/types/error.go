@@ -8,7 +8,6 @@ const (
 	ExitAuth     = 4
 	ExitConflict = 5
 	ExitTimeout  = 6
-	ExitDryRunOK = 7
 )
 
 type ErrorResponse struct {

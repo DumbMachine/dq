@@ -18,7 +18,7 @@ dq is a **safe, thin wrapper over gorm** that gives agents a generic CLI interfa
 
 6. **Discover solves cold-start.** One call returns the full schema hierarchy with cached results. An agent doesn't need to fumble through `SHOW TABLES` → `SHOW COLUMNS` → repeat. Discover + annotations = instant orientation.
 
-7. **Safety by default.** `--dry-run` wraps mutations in a transaction and rolls back. `--explain` shows the query plan without executing. `--limit` and `--fields` protect the context window. The agent is not a trusted operator.
+7. **Safety by default.** `--explain` shows the query plan without executing. `--limit` and `--fields` protect the context window. The agent is not a trusted operator.
 
 8. **When you change something, change everything that references it.** Removing a feature means updating: Go code, driver interface, root.go imports, capabilities command, all skill files, README, and CLAUDE.md. No stale references. Ever.
 
@@ -66,4 +66,4 @@ If you're tempted to add a new command, ask: "Can the agent do this by running S
 
 ## Exit Codes
 
-0=success, 1=error, 2=usage, 3=not found, 4=auth, 5=conflict, 6=timeout, 7=dry-run-ok
+0=success, 1=error, 2=usage, 3=not found, 4=auth, 5=conflict, 6=timeout

@@ -120,12 +120,12 @@ Based on the findings, recommend one of these approaches:
 **Option A: Delete orphaned rows** (when the child rows are meaningless without the parent)
 
 ```bash
-# Preview the delete first
+# Count orphaned rows first
 dq postgres -c <connection> \
-  "DELETE FROM <child_table>
+  "SELECT COUNT(*) AS orphan_count FROM <child_table>
    WHERE <child_column> NOT IN (SELECT <parent_column> FROM <parent_table>)
      AND <child_column> IS NOT NULL" \
-  --dry-run --output json
+  --output json
 ```
 
 Then follow the [dq-safe-mutation](../dq-safe-mutation/) recipe to execute.
@@ -150,10 +150,10 @@ Then create placeholder parent rows for each missing ID with appropriate default
 
 ```bash
 dq postgres -c <connection> \
-  "UPDATE <child_table> SET <child_column> = NULL
+  "SELECT COUNT(*) AS affected_rows FROM <child_table>
    WHERE <child_column> NOT IN (SELECT <parent_column> FROM <parent_table>)
      AND <child_column> IS NOT NULL" \
-  --dry-run --output json
+  --output json
 ```
 
 **Option D: Add or fix the FK constraint** (when no constraint exists yet)

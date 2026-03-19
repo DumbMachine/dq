@@ -17,7 +17,6 @@ var (
 	fields       string
 	limit        int
 	offset       int
-	dryRun       bool
 	timeout      string
 	yes          bool
 	noColor      bool
@@ -51,7 +50,6 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&fields, "fields", "", "Comma-separated list of fields to include")
 	rootCmd.PersistentFlags().IntVar(&limit, "limit", 0, "Maximum number of rows to return")
 	rootCmd.PersistentFlags().IntVar(&offset, "offset", 0, "Number of rows to skip")
-	rootCmd.PersistentFlags().BoolVar(&dryRun, "dry-run", false, "Preview mutations without applying (transaction rollback)")
 	rootCmd.PersistentFlags().StringVar(&timeout, "timeout", "30s", "Query timeout duration")
 	rootCmd.PersistentFlags().BoolVar(&yes, "yes", false, "Skip confirmation prompts")
 	rootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "Disable colored output")

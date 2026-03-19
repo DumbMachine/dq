@@ -58,7 +58,6 @@ func runQuery(cmd *cobra.Command, args []string, expectedType string) error {
 	sqlDB, _ := db.DB()
 	defer sqlDB.Close()
 
-	dryRun, _ := cmd.Flags().GetBool("dry-run")
 	timeoutStr, _ := cmd.Flags().GetString("timeout")
 	limitVal, _ := cmd.Flags().GetInt("limit")
 	offsetVal, _ := cmd.Flags().GetInt("offset")
@@ -72,7 +71,6 @@ func runQuery(cmd *cobra.Command, args []string, expectedType string) error {
 	}
 
 	result, err := query.Execute(db, sql, query.ExecOptions{
-		DryRun:  dryRun,
 		Timeout: timeout,
 		Limit:   limitVal,
 		Offset:  offsetVal,
@@ -97,16 +95,11 @@ func runQuery(cmd *cobra.Command, args []string, expectedType string) error {
 			Database:   conn.Database,
 			RowCount:   len(rows),
 			DurationMs: result.Duration.Milliseconds(),
-			DryRun:     dryRun,
 			Limit:      limitVal,
 			Offset:     offsetVal,
 		},
 		Columns: result.Columns,
 		Rows:    rows,
-	}
-
-	if dryRun {
-		qr.Meta.AffectedRows = result.AffectedRows
 	}
 
 	return output.Print(format, qr)

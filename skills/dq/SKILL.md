@@ -24,7 +24,8 @@ When exploring an unfamiliar database, follow this priority order:
 4. Query with the backend-specific command (`dq postgres`, `dq mysql`, `dq sqlite`).
 
 Boundary rules:
-- Always use `--dry-run` before running mutations unless the user explicitly says to execute.
+- Always use `--explain` before running mutations to check the query plan.
+- Use `SELECT COUNT(*)` with the same WHERE clause to estimate affected rows before mutating.
 - Never expose columns marked as PII in annotations unless the user explicitly asks.
 - Respect `--limit` to avoid flooding context with large result sets.
 - Use `--fields` to select only the columns you need.
@@ -117,7 +118,8 @@ Annotations from `~/.config/dq/annotations/<connection>.yaml` are merged into th
 | Explore database structure | `dq discover -c <name>` | Full overview, cached, annotations merged |
 | Deep dive into one table | `dq schema describe -c <name> --table <t>` | Columns, indexes, constraints, annotations |
 | Run a SELECT query | `dq postgres -c <name> <sql>` | Returns structured result with metadata |
-| Preview a mutation | `dq postgres -c <name> <sql> --dry-run` | Transaction rollback, shows affected rows |
+| Estimate mutation impact | `dq postgres -c <name> "SELECT COUNT(*) ..." ` | Count rows matching WHERE clause before mutating |
+| Check query plan | `dq postgres -c <name> <sql> --explain` | Shows query plan without executing |
 | Check CLI capabilities | `dq schema capabilities --output json` | Runtime self-introspection |
 
 ## Running Queries
@@ -144,7 +146,6 @@ Shared flags for all query commands:
 | `--fields col1,col2` | Filter columns in output |
 | `--limit N` | Maximum rows to return |
 | `--offset N` | Skip rows (pagination) |
-| `--dry-run` | Wrap in transaction and rollback |
 | `--timeout 30s` | Query timeout |
 | `--explain` | Prepend EXPLAIN to the query |
 
@@ -157,7 +158,6 @@ Result envelope:
     "database": "myapp",
     "row_count": 10,
     "duration_ms": 42,
-    "dry_run": false,
     "limit": 10
   },
   "columns": [
@@ -184,13 +184,6 @@ dq postgres -c mydb "SELECT * FROM users ORDER BY created_at DESC" --limit 10 --
 dq postgres -c mydb "SELECT * FROM users" --fields id,email,created_at
 ```
 
-**Dry Run (Preview Mutations):**
-
-```bash
-dq postgres -c mydb "DELETE FROM users WHERE status = 'inactive'" --dry-run
-# Returns affected_rows count without actually deleting
-```
-
 **With Timeout:**
 
 ```bash
@@ -211,15 +204,14 @@ dq postgres -c mydb "SELECT * FROM users" --output csv > users.csv
 dq postgres -c mydb "SELECT * FROM users" --output ndjson > users.ndjson
 ```
 
-## Dry Run
+## Safe Mutation Pattern
 
-Add `--dry-run` to any mutation. dq wraps the SQL in `BEGIN` → execute → `ROLLBACK`. You get real `affected_rows` and constraint errors without modifying data.
+Before any mutation, always:
 
-```bash
-dq postgres -c prod-pg "DELETE FROM users WHERE status = 'inactive'" --dry-run --output json
-```
-
-Always use `--dry-run` first for destructive operations unless the user explicitly says to execute.
+1. **Check the query plan**: `dq postgres -c prod-pg "DELETE FROM users WHERE status = 'inactive'" --explain --output json`
+2. **Count affected rows**: `dq postgres -c prod-pg "SELECT COUNT(*) AS affected FROM users WHERE status = 'inactive'" --output json`
+3. **Preview a sample**: `dq postgres -c prod-pg "SELECT * FROM users WHERE status = 'inactive'" --limit 10 --output json`
+4. **Ask the user to confirm** before executing the mutation.
 
 ## Schema Introspection
 
@@ -329,7 +321,6 @@ Errors are always written to stderr as JSON:
 | 4 | Auth failure |
 | 5 | Conflict |
 | 6 | Timeout |
-| 7 | Dry run completed successfully |
 
 ## Error Handling
 
@@ -399,7 +390,7 @@ dq annotate set -c prod --table users --column status --note "1=active, 2=suspen
 - Always include `--output json` when parsing results programmatically.
 - Use `dq discover` to orient before querying — do not guess table or column names.
 - Annotate PII columns immediately when you identify them.
-- Prefer `--dry-run` for mutations, then confirm with the user before executing.
+- For mutations, use `--explain` and `SELECT COUNT(*)` to assess impact, then confirm with the user before executing.
 - Use `--fields` and `--limit` to keep output within context window limits.
 
 ## Typical Agent Workflow
@@ -417,8 +408,9 @@ dq annotate set -c prod-pg --table users --column status --note "1=active, 2=sus
 # 4. Deep dive if needed
 dq schema describe -c prod-pg --table orders --output json
 
-# 5. Preview mutations
-dq postgres -c prod-pg "UPDATE users SET status = 2 WHERE last_login < '2025-01-01'" --dry-run --output json
+# 5. Check impact before mutations
+dq postgres -c prod-pg "UPDATE users SET status = 2 WHERE last_login < '2025-01-01'" --explain --output json
+dq postgres -c prod-pg "SELECT COUNT(*) AS affected FROM users WHERE last_login < '2025-01-01'" --output json
 ```
 
 ## Optional Recipe Skills
@@ -447,8 +439,8 @@ npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-orphan-chec
 | [dq-trace-relationships](dq-trace-relationships/) | Map foreign key chains from a table to understand the data model. |
 | [dq-data-profiling](dq-data-profiling/) | Profile a table: row count, null rates, distinct counts, min/max per column. |
 | [dq-sample-and-summarize](dq-sample-and-summarize/) | Get representative rows, summarize value distributions, flag anomalies. |
-| [dq-query-impact-analysis](dq-query-impact-analysis/) | "Is this query safe?" EXPLAIN + dry-run + cascade check + risk assessment. |
-| [dq-safe-mutation](dq-safe-mutation/) | Dry-run, confirm, execute pattern for INSERT/UPDATE/DELETE. |
+| [dq-query-impact-analysis](dq-query-impact-analysis/) | "Is this query safe?" EXPLAIN + row count + cascade check + risk assessment. |
+| [dq-safe-mutation](dq-safe-mutation/) | Explain, count, preview, confirm, execute pattern for INSERT/UPDATE/DELETE. |
 | [dq-safe-backfill](dq-safe-backfill/) | Batch update pattern: preview, execute in chunks, track progress. |
 | [dq-slow-query-investigation](dq-slow-query-investigation/) | Find slow queries via pg_stat_activity, EXPLAIN them, suggest fixes. |
 | [dq-table-health-check](dq-table-health-check/) | Table health: size, bloat, dead tuples, index usage, missing indexes. |

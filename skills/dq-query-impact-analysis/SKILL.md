@@ -97,15 +97,15 @@ Key things to look for:
 
 ### 3. If it's a mutation (INSERT/UPDATE/DELETE): assess blast radius
 
-#### 3a. Dry-run to get affected row count
+#### 3a. Count affected rows
 
-Use `--dry-run` to execute the mutation inside a transaction that gets rolled back. This gives you the real affected row count without changing data:
+Use `SELECT COUNT(*)` with the same WHERE clause as the mutation to get the affected row count with zero side effects:
 
 ```bash
-dq postgres -c <connection> "<mutation_query>" --dry-run --output json
+dq postgres -c <connection> "SELECT COUNT(*) AS affected_rows FROM <table> WHERE <same_where_clause>" --output json
 ```
 
-The response includes `affected_rows` in the metadata. This is the exact number of rows that would be modified.
+This returns the exact number of rows that would be modified.
 
 #### 3b. Calculate blast radius
 
@@ -230,7 +230,7 @@ Compile actionable recommendations based on the findings. Prioritize by impact:
 1. **Critical** (must fix before running):
    - Add a WHERE clause to unbounded DELETE/UPDATE
    - Fix incorrect join conditions
-   - Add `--dry-run` to preview mutations
+   - Use `SELECT COUNT(*)` to estimate affected rows before mutating
 
 2. **Recommended** (should fix for safety/performance):
    - Add missing indexes before running the query
@@ -257,13 +257,13 @@ Example recommendation summary:
 > | Sequential scan | No | Low |
 >
 > **Recommendations**:
-> 1. Run with `--dry-run` first to confirm affected row count
+> 1. Count affected rows first with `SELECT COUNT(*)`
 > 2. Be aware that ~36,000 rows in `order_items` will also be deleted via CASCADE
 > 3. The `audit_log_trigger` will fire for each deleted row -- expect ~12,000 audit entries
 >
 > ```bash
-> # Step 1: Preview
-> dq postgres -c <connection> "DELETE FROM orders WHERE status = 'cancelled' AND created_at < '2025-01-01'" --dry-run --output json
+> # Step 1: Count affected rows
+> dq postgres -c <connection> "SELECT COUNT(*) AS affected_rows FROM orders WHERE status = 'cancelled' AND created_at < '2025-01-01'" --output json
 >
 > # Step 2: Execute (only after user confirms)
 > dq postgres -c <connection> "DELETE FROM orders WHERE status = 'cancelled' AND created_at < '2025-01-01'" --output json

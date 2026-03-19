@@ -7,16 +7,14 @@ type QueryResult struct {
 }
 
 type ResultMeta struct {
-	Connection   string `json:"connection"`
-	Database     string `json:"database,omitempty"`
-	RowCount     int    `json:"row_count"`
-	AffectedRows int64  `json:"affected_rows,omitempty"`
-	DurationMs   int64  `json:"duration_ms"`
-	DryRun       bool   `json:"dry_run,omitempty"`
-	Truncated    bool   `json:"truncated,omitempty"`
-	TotalRows    int64  `json:"total_rows,omitempty"`
-	Limit        int    `json:"limit,omitempty"`
-	Offset       int    `json:"offset,omitempty"`
+	Connection string `json:"connection"`
+	Database   string `json:"database,omitempty"`
+	RowCount   int    `json:"row_count"`
+	DurationMs int64  `json:"duration_ms"`
+	Truncated  bool   `json:"truncated,omitempty"`
+	TotalRows  int64  `json:"total_rows,omitempty"`
+	Limit      int    `json:"limit,omitempty"`
+	Offset     int    `json:"offset,omitempty"`
 }
 
 type ColumnMeta struct {

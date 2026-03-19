@@ -29,16 +29,14 @@ dq postgres -c <connection> \
 
 If `total_rows` exceeds 100,000, batching is strongly recommended. If it exceeds 1,000,000, consider running during a maintenance window.
 
-## Step 2: Preview the Change with --dry-run
+## Step 2: Preview the Change
 
-Test the UPDATE on a small sample to confirm it does what you expect:
+Count the rows that match the backfill condition and preview a sample before modifying anything:
 
 ```bash
 dq postgres -c <connection> \
-  "UPDATE <table> SET <column> = <new_value>
-   WHERE <backfill_condition> AND id IN (
-     SELECT id FROM <table> WHERE <backfill_condition> ORDER BY id LIMIT 5
-   )" --dry-run --output json
+  "SELECT COUNT(*) AS affected_rows FROM <table> WHERE <backfill_condition>" \
+  --output json
 ```
 
 ## Step 3: Show Before/After for a Sample
@@ -102,7 +100,7 @@ dq postgres -c <connection> \
   --output json
 ```
 
-Repeat until `affected_rows` returns 0.
+Repeat until `row_count` returns 0.
 
 **PostgreSQL batch pattern using a CTE (preferred — avoids ORDER BY in UPDATE):**
 
@@ -133,7 +131,7 @@ dq postgres -c <connection> \
 
 Report format: "Batch N complete: X of Y rows updated (Z%)"
 
-If any batch returns 0 `affected_rows` before reaching the total, the backfill is done.
+If any batch returns 0 `row_count` before reaching the total, the backfill is done.
 
 ## Step 6: Verify Final State
 
