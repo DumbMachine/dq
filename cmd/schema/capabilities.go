@@ -33,6 +33,12 @@ var capabilitiesCmd = &cobra.Command{
 				{"name": "annotate set", "description": "Set annotation on table or column"},
 				{"name": "annotate get", "description": "Get annotations"},
 				{"name": "annotate remove", "description": "Remove annotation"},
+				{"name": "chart", "description": "Generate interactive HTML charts from query results (pipe from query or --from file)"},
+				{"name": "playbook add", "description": "Add a playbook from a markdown file or stdin"},
+				{"name": "playbook list", "description": "List all playbooks"},
+				{"name": "playbook show", "description": "Show a playbook's full content"},
+				{"name": "playbook remove", "description": "Remove a playbook"},
+				{"name": "playbook init", "description": "Generate a playbook template file"},
 			},
 			"output_formats": []string{"json", "table", "csv", "ndjson"},
 			"global_flags": []map[string]any{
@@ -63,6 +69,8 @@ var capabilitiesCmd = &cobra.Command{
 				"schema_caching",
 				"annotations",
 				"os_keychain_credential_storage",
+				"interactive_charts",
+				"playbooks",
 			},
 		}
 

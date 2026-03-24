@@ -413,6 +413,57 @@ dq postgres -c prod-pg "UPDATE users SET status = 2 WHERE last_login < '2025-01-
 dq postgres -c prod-pg "SELECT COUNT(*) AS affected FROM users WHERE last_login < '2025-01-01'" --output json
 ```
 
+## Charts — Visualize Query Results
+
+Generate interactive HTML charts from any query result. Charts auto-open in the browser.
+
+```bash
+# Pipe query output to chart
+dq postgres -c prod-pg "SELECT month, revenue FROM monthly_stats ORDER BY month" -o json \
+  | dq chart --type line --x month --y revenue --title "Revenue Trend"
+
+# Multiple series
+dq postgres -c prod-pg "SELECT month, revenue, cost FROM stats ORDER BY month" -o json \
+  | dq chart --type area --x month --y revenue,cost
+
+# Grouped bar chart
+dq postgres -c prod-pg "SELECT quarter, region, SUM(amount) AS revenue FROM sales GROUP BY 1, 2" -o json \
+  | dq chart --type bar --x quarter --y revenue --group region
+
+# Pie chart
+dq postgres -c prod-pg "SELECT status, COUNT(*) AS count FROM users GROUP BY status" -o json \
+  | dq chart --type pie --x status --y count
+
+# Save without opening
+dq chart --type line --x month --y revenue --from results.json --save report.html --no-open
+```
+
+Chart types: `line`, `bar`, `area`, `scatter`, `pie`
+
+## Playbooks — Reusable Analytics Workflows
+
+Playbooks encode org-specific analytics workflows, business logic, and data knowledge as markdown files that persist across sessions.
+
+```bash
+# Generate a template
+dq playbook init monthly-revenue
+
+# Edit the template, then add it
+dq playbook add monthly-revenue --file monthly-revenue.md
+
+# List and filter playbooks
+dq playbook list
+dq playbook list --tag revenue
+
+# Show a playbook's full content
+dq playbook show monthly-revenue
+
+# Remove
+dq playbook remove monthly-revenue
+```
+
+When starting an analysis, check for relevant playbooks with `dq playbook list` and follow them with `dq playbook show <name>`.
+
 ## Optional Recipe Skills
 
 For multi-step workflows, install additional skills:
@@ -430,6 +481,8 @@ npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-slow-query-
 npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-table-health-check
 npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-find-missing-indexes
 npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-orphan-check
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-chart
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-playbook
 ```
 
 | Skill | Description |
@@ -446,3 +499,5 @@ npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-orphan-chec
 | [dq-table-health-check](dq-table-health-check/) | Table health: size, bloat, dead tuples, index usage, missing indexes. |
 | [dq-find-missing-indexes](dq-find-missing-indexes/) | Identify columns in WHERE/JOIN without indexes, generate CREATE INDEX suggestions. |
 | [dq-orphan-check](dq-orphan-check/) | Find rows with broken foreign key references (dangling FKs). |
+| [dq-chart](dq-chart/) | Generate interactive HTML charts (line, bar, area, scatter, pie) from query results. |
+| [dq-playbook](dq-playbook/) | Create and manage playbooks — reusable analytics workflows and org knowledge. |

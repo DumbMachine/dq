@@ -6,6 +6,7 @@ import (
 
 	"github.com/dumbmachine/db-cli/cmd/annotate"
 	"github.com/dumbmachine/db-cli/cmd/connection"
+	"github.com/dumbmachine/db-cli/cmd/playbook"
 	"github.com/dumbmachine/db-cli/cmd/query"
 	"github.com/dumbmachine/db-cli/cmd/schema"
 	"github.com/dumbmachine/db-cli/internal/output"
@@ -61,6 +62,8 @@ func init() {
 	rootCmd.AddCommand(connection.Cmd)
 	rootCmd.AddCommand(schema.Cmd)
 	rootCmd.AddCommand(annotate.Cmd)
+	rootCmd.AddCommand(chartCmd)
+	rootCmd.AddCommand(playbook.Cmd)
 	query.RegisterCommands(rootCmd)
 }
 

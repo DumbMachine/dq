@@ -38,6 +38,8 @@ npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-sample-and-
 npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-slow-query-investigation
 npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-table-health-check
 npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-trace-relationships
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-chart
+npx skills add https://github.com/dumbmachine/dq/tree/main/skills/dq-playbook
 ```
 
 ## connections
@@ -220,12 +222,72 @@ errors go to stderr. always json. always structured.
 6  timeout
 ```
 
+## charts
+
+pipe any query result into `dq chart` and get an interactive [ECharts](https://echarts.apache.org/) visualization that auto-opens in your browser.
+
+```sh
+# area chart with multiple series
+dq postgres -c prod "SELECT month, revenue, cost, profit FROM monthly_stats ORDER BY month" -o json \
+  | dq chart --type area --x month --y revenue,cost,profit --title "2025 Financial Overview"
+```
+
+![area chart](assets/chart-area-financial.png)
+
+```sh
+# grouped bar chart
+dq postgres -c prod "SELECT quarter, region, SUM(amount) AS revenue FROM sales GROUP BY 1, 2" -o json \
+  | dq chart --type bar --x quarter --y revenue --group region --title "Revenue by Region"
+```
+
+![bar chart](assets/chart-bar-region.png)
+
+```sh
+# pie chart
+dq postgres -c prod "SELECT segment, SUM(revenue) AS revenue FROM accounts GROUP BY segment" -o json \
+  | dq chart --type pie --x segment --y revenue --title "Revenue by Segment"
+```
+
+![pie chart](assets/chart-pie-segment.png)
+
+chart types: `line`, `bar`, `area`, `scatter`, `pie`
+
+save without opening: `--save report.html --no-open`
+read from file instead of stdin: `--from results.json`
+
+## playbooks
+
+reusable analytics workflows and org knowledge. like [devin playbooks](https://docs.devin.ai/product-guides/creating-playbooks) but local-first.
+
+```sh
+# generate a template
+dq playbook init monthly-revenue
+# edit monthly-revenue.md, then add it
+dq playbook add monthly-revenue --file monthly-revenue.md
+
+# list all playbooks (filter with --tag)
+dq playbook list
+dq playbook list --tag finance
+
+# show full content
+dq playbook show monthly-revenue
+
+# remove
+dq playbook remove monthly-revenue
+```
+
+playbooks are markdown files with yaml frontmatter, stored in `~/.config/dq/playbooks/`.
+they encode org-specific workflows, business logic, sql templates, data quirks,
+and forbidden actions — so agents follow your org's playbook, not just generic sql.
+
 ## the workflow
 
 ```sh
-dq discover -c prod                     # what's in here
-dq postgres -c prod "SELECT ..."        # get data
-dq annotate set -c prod --table ...     # remember what you learned
-dq schema describe -c prod --table ...  # deep dive
-dq postgres -c prod "SELECT ..." --explain  # check query plan
+dq discover -c prod                                    # what's in here
+dq playbook show monthly-revenue                       # check if there's a playbook
+dq postgres -c prod "SELECT ..." -o json               # get data
+dq postgres -c prod "SELECT ..." -o json | dq chart    # visualize it
+dq annotate set -c prod --table ...                    # remember what you learned
+dq schema describe -c prod --table ...                 # deep dive
+dq postgres -c prod "SELECT ..." --explain             # check query plan
 ```

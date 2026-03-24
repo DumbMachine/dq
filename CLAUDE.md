@@ -32,8 +32,8 @@ go test ./...       # run tests
 
 ## Project Structure
 
-- `cmd/` — Cobra command definitions (root, version, discover, connection/, query/, schema/, annotate/)
-- `internal/` — Private packages (config, database drivers, cache, annotations, output, query executor, validation)
+- `cmd/` — Cobra command definitions (root, version, discover, chart, connection/, query/, schema/, annotate/, playbook/)
+- `internal/` — Private packages (config, database drivers, cache, annotations, output, query executor, validation, chart, playbook)
 - `pkg/types/` — Shared type definitions
 - `skills/` — Agent skill files and recipes (see `skills/SKILLS.md` for the index)
 
@@ -46,6 +46,8 @@ go test ./...       # run tests
 | Schema introspection (tables/columns/indexes/constraints/describe) | Query impact analysis |
 | Discover (full schema + cache + annotations) | Safe mutation patterns |
 | Annotations (set/get/remove) | Missing index detection |
+| Charts (interactive HTML from query results) | Cohort analysis |
+| Playbooks (add/list/show/remove/init) | Custom org-specific workflows |
 | Capabilities (self-introspection) | Orphan FK checks |
 | Output formatting (json/table/csv/ndjson) | Backfill strategies |
 
@@ -59,6 +61,8 @@ If you're tempted to add a new command, ask: "Can the agent do this by running S
 - **Connections**: Stored in `~/.config/dq/config.yaml` via `internal/config/`.
 - **Cache**: `~/.config/dq/cache/<connection>/discover.json`
 - **Annotations**: `~/.config/dq/annotations/<connection>.yaml`
+- **Charts**: `dq chart` reads JSON from stdin/file, generates interactive ECharts HTML, auto-opens browser. Types: line, bar, area, scatter, pie.
+- **Playbooks**: Stored in `~/.config/dq/playbooks/<name>.md` — markdown with YAML frontmatter. CRUD via `dq playbook` subcommands.
 
 ## Dependencies
 
